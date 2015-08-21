@@ -236,16 +236,31 @@
     //
     NSArray *rawCoordinateArrays = feature[@"geometry"][@"coordinates"];
     
-    for (NSUInteger index = 0; index < [rawCoordinateArrays count]; index++)
+    if ([[rawCoordinateArrays firstObject] count] == 2)
     {
-        // Create our polygon with the formatted coordinates array
+        //Array has points, so this is a simple polygon
         //
-        NSArray* rawCoordinates = [rawCoordinateArrays objectAtIndex:index];
-        MGLPolygon *polygon = [self getPolygonFromCoordinateArray:rawCoordinates];
+        MGLPolygon *polygon = [self getPolygonFromCoordinateArray:rawCoordinateArrays];
         polygon.title = feature[@"properties"][@"name"];
         
         [polygons addObject:polygon];
     }
+    else
+    {
+        //Array has a polygon definition, so this is a complex polygon containing holes.
+        //
+        for (NSUInteger index = 0; index < [rawCoordinateArrays count]; index++)
+        {
+            // Create our polygon with the formatted coordinates array
+            //
+            NSArray* rawCoordinates = [rawCoordinateArrays objectAtIndex:index];
+            MGLPolygon *polygon = [self getPolygonFromCoordinateArray:rawCoordinates];
+            polygon.title = feature[@"properties"][@"name"];
+            
+            [polygons addObject:polygon];
+        }
+    }
+    
     
     return polygons;
 }
@@ -256,7 +271,7 @@
 //
 +(NSArray*)getPolygonsFromGeoJSONFeature:(NSDictionary*)feature
 {
-    NSMutableArray *multiPolygons = [NSMutableArray array];
+    NSMutableArray *polygons = [NSMutableArray array];
     
     // Get the raw array of arrays of coordinates
     //
@@ -265,23 +280,16 @@
     for (NSUInteger index = 0; index < [rawCoordinateArrays count]; index++)
     {
         NSArray *rawPolygonCoordinates = [rawCoordinateArrays objectAtIndex:index];
-        NSMutableArray *polygons = [NSMutableArray array];
         
-        for (NSUInteger i = 0; i < [rawPolygonCoordinates count]; i++)
-        {
-            // Create our polygon with the formatted coordinates array
-            //
-            NSArray* rawCoordinates = [rawPolygonCoordinates objectAtIndex:index];
-            MGLPolygon *polygon = [self getPolygonFromCoordinateArray:rawCoordinates];
-            polygon.title = feature[@"properties"][@"name"];
-            
-            [polygons addObject:polygon];
-        }
-        
-        [multiPolygons addObject:polygons];
+        // Create our polygon with the formatted coordinates array
+        //
+        MGLPolygon *polygon = [self getPolygonFromCoordinateArray:rawPolygonCoordinates];
+        polygon.title = feature[@"properties"][@"name"];
+
+        [polygons addObject:polygon];
     }
     
-    return multiPolygons;
+    return polygons;
 }
 
 +(MGLPolygon*)getPolygonFromCoordinateArray:(NSArray*)rawCoordinates
