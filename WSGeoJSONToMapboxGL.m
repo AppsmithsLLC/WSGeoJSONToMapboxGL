@@ -90,9 +90,8 @@
     // Get the data for our point
     //
     NSArray *rawCoordinates = feature[@"geometry"][@"coordinates"];
-    NSArray *rawPoint = [rawCoordinates objectAtIndex:0];
     
-    MGLPointAnnotation *point = [self getPointFromPointArray:rawPoint];
+    MGLPointAnnotation *point = [self getPointFromPointArray:rawCoordinates];
     point.title = feature[@"properties"][@"name"];
     
     return [NSArray arrayWithObject:point];
